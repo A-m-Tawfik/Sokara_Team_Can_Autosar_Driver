@@ -37,7 +37,7 @@ typedef double float64;
 #define TRUE  (uint8)1
 
 
-#define CPU_TYPE CPU_TYPE_8
+#define CPU_TYPE CPU_TYPE_32
 #define CPU_BIT_ORDER LSB_FIRST
 #define CPU_BYTE_ORDER LOW_BYTE_FIRST
 
