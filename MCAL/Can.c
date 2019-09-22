@@ -1,52 +1,8 @@
-#include "Can_Reg.h"
 #include "Can.h"
 
-//static void FillTivaTxMsgObj(void);
-
 static Can_ControllerStateType Can_ControllerState[NUM_OF_CAN_CONTROLLERS]={CAN_CS_UNINIT};
-
+static MsgConfType MsgConf[NUM_OF_HOH * MAX_HW_OBJ_COUNT_PER_HOH] = {CAN_MSG_NOT_CONF};
 const CanType TivaCan = CAN_CONFIG;
-//MsgObjType TivaMsgObj[NUM_OF_HOH][MAX_HW_OBJ_COUNT_PER_HOH] ; 
-
-
-// static void FillTivaTxMsgObj(void)  /* will be called at Init of CanDrv */
-// {
-// 	uint8 Controller0MsgObjCounter =0U;
-//  	uint8 Controller1MsgObjCounter =0U;
-
-//  	uint8 index;
-//  	uint8 index2;
-//  	for (index=0U;index<NUM_OF_HOH;index++)
-//  	{
-// 	    if(TivaCan.CanConfigSet.CanHardwareObject[index].CanObjectType == TRANSMIT_HOH )
-// 	    {
-// 	        if(TivaCan.CanConfigSet.CanHardwareObject[index].CanControllerRef==&TivaCan.CanConfigSet.CanController[0])
-// 	        {
-// 	            for(index2=0U;index2<TivaCan.CanConfigSet.CanHardwareObject[index].CanHwObjectCount;index2++)
-// 	            {
-// 	                TivaMsgObj[index][index2].MsgId=Controller0MsgObjCounter;
-// 	                Controller0MsgObjCounter ++;
-	                 
-
-// 	            }
-// 	        }
-// 	        else
-// 	        {
-// 	            for(index2=0U;index1<CanContainer.CanConfigSet.CanHardwareObject[index].CanHwObjectCount;index2++)
-// 	            {
-// 	                TivaMsgObj[index][index2].MsgId=Controller1MsgObjCounter;
-// 	                Controller1MsgObjCounter ++;
-// 	            }
-//             }
-
-// 	    }
-// 	    else
-// 	    {
-//             /*Do Nothing*/
-// 	    }
-//    }
-// }
-
 
 Std_ReturnType Can_GetControllerMode(uint8 Controller,Can_ControllerStateType* ControllerModePtr)
 {
@@ -105,20 +61,19 @@ void Can_MainFunction_Write(void)
 	    || (CAN_TX_PROCESSING_0==MIXED_PROCESSING) || (CAN_TX_PROCESSING_1==MIXED_PROCESSING))
 		
 		uint8  index,index2;
-	    uint16 POLLING_REGISTER;
 
-		if(TivaCan.CanConfigSet.CanController[0].CanControllerActivation == STD_ON )
+		if(TivaCan.CanConfigSet.CanController[CONTROLLER_0_ID].CanControllerActivation == STD_ON )
 		{
-			CAN0_IF1CMSK_R&=((uint32)(~(uint32)0x80U));
+			CLR_BIT_PERPHBAND(CAN0_IF1CMSK_A,CAN_IF1CMSK_WRNRD);
 		}
 		else 
 		{
 			/*Do Nothing*/
 		}
 		
-		if(TivaCan.CanConfigSet.CanController[1].CanControllerActivation == STD_ON )
+		if(TivaCan.CanConfigSet.CanController[CONTROLLER_1_ID].CanControllerActivation == STD_ON )
 		{
-			CAN1_IF1CMSK_R&=((uint32)(~(uint32)0x80U));
+		    CLR_BIT_PERPHBAND(CAN1_IF1CMSK_A,CAN_IF1CMSK_WRNRD);
 		}
 		else 
 		{
@@ -129,22 +84,19 @@ void Can_MainFunction_Write(void)
 		{
 			if(TivaCan.CanConfigSet.CanHardwareObject[index].CanObjectType == TRANSMIT_HOH )
 			{
-				if(TivaCan.CanConfigSet.CanHardwareObject[index].CanControllerRef == &TivaCan.CanConfigSet.CanController[0])
+				if(TivaCan.CanConfigSet.CanHardwareObject[index].CanControllerRef == &TivaCan.CanConfigSet.CanController[CONTROLLER_0_ID])
 				{
 					#if (CAN_TX_PROCESSING_0==POLLING_PROCESSING)
 
 						for(index2=0U;index2<TivaCan.CanConfigSet.CanHardwareObject[index].CanHwObjectCount;index2++)
 	                    {
-	                    	if(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConf==CAN_MSG_NOT_CONF)
+	                    	if(*(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConfPtr)==CAN_MSG_NOT_CONF)
 	                        {
 		                        CAN0_IF1CRQ_R=TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgId;
 		                        
-		                        POLLING_REGISTER=((uint16)((uint16)CAN0_IF1MCTL_R));
-		                        POLLING_REGISTER|=0xFEFFU;
-		                        
-		                    	if(POLLING_REGISTER==0xFEFFU)
+		                    	if(GET_BIT_PERPHBAND(CAN0_IF1MCTL_A,CAN_IF1MCTL_TXRQST) == (uint32)0)
 		                      	{
-		                        	TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConf=CAN_MSG_CONF;
+		                    	    *(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConfPtr)=CAN_MSG_CONF;
 
 		                            CanIf_TxConfirmation(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].PduId);
 
@@ -177,10 +129,8 @@ void Can_MainFunction_Write(void)
 		                        {
 			                        CAN0_IF1CRQ_R=TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgId;
 			                        
-			                        POLLING_REGISTER=((uint16)((uint16)CAN0_IF1MCTL_R));
-			                        POLLING_REGISTER|=0xFEFFU;
 			                        
-			                    	if(POLLING_REGISTER==0xFEFFU)
+			                    	if(GET_BIT_PERPHBAND(CAN0_IF1MCTL_A,CAN_IF1MCTL_TXRQST) == (uint32)0)
 			                      	{
 			                        	*(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConfPtr)=CAN_MSG_CONF;
 
@@ -209,22 +159,20 @@ void Can_MainFunction_Write(void)
 						/*Do Nothing */ 		
 					#endif	
 
-				else if (TivaCan.CanConfigSet.CanHardwareObject[index].CanControllerRef == &TivaCan.CanConfigSet.CanController[1])
+				else if (TivaCan.CanConfigSet.CanHardwareObject[index].CanControllerRef == &TivaCan.CanConfigSet.CanController[CONTROLLER_1_ID])
 				{
 					#if (CAN_TX_PROCESSING_1==POLLING_PROCESSING)
 
 						for(index2=0U;index2<TivaCan.CanConfigSet.CanHardwareObject[index].CanHwObjectCount;index2++)
 	                    {
-	                    	if(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConf==CAN_MSG_NOT_CONF)
+	                    	if(*(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConfPtr)==CAN_MSG_NOT_CONF)
 	                        {
 		                        CAN1_IF1CRQ_R=TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgId;
 		                        
-		                        POLLING_REGISTER=((uint16)((uint16)CAN0_IF1MCTL_R));
-		                        POLLING_REGISTER|=0xFEFFU;
 		                        
-		                    	if(POLLING_REGISTER==0xFEFFU)
+		                    	if(GET_BIT_PERPHBAND(CAN1_IF1MCTL_A,CAN_IF1MCTL_TXRQST) == (uint32)0)
 		                      	{
-		                        	TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConf=CAN_MSG_CONF;
+		                    	    *(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConfPtr)=CAN_MSG_CONF;
 
 		                            CanIf_TxConfirmation(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].PduId);
 
@@ -256,10 +204,8 @@ void Can_MainFunction_Write(void)
 		                        {
 			                        CAN1_IF1CRQ_R=TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgId;
 			                        
-			                        POLLING_REGISTER=((uint16)((uint16)CAN0_IF1MCTL_R));
-			                        POLLING_REGISTER|=0xFEFFU;
 			                        
-			                    	if(POLLING_REGISTER==0xFEFFU)
+			                    	if(GET_BIT_PERPHBAND(CAN1_IF1MCTL_A,CAN_IF1MCTL_TXRQST) == (uint32)0)
 			                      	{
 			                    	    *(TivaCan.CanConfigSet.CanHardwareObject[index].MsgObj[index2].MsgConfPtr)=CAN_MSG_CONF;
 

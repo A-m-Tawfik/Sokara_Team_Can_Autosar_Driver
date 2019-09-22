@@ -113,7 +113,7 @@ typedef uint8 CanObjectTypeType;
 
 typedef struct 
 {
-	Can_ConfigType*  			   CanControllerRef;                /* Reference to CAN Controller to which the HOH is associated to */ 
+	Can_ConfigType* const  			   CanControllerRef;                /* Reference to CAN Controller to which the HOH is associated to */ 
 																	
 	boolean          			   CanHardwareObjectUsesPolling;    /* Enables polling of this hardware object */
 	
@@ -131,7 +131,7 @@ typedef struct
 																	
 	CanObjectTypeType				CanObjectType;                  /* Specifies if the HardwareObject is used as Transmit or as Receive object*/
 	
-	CanMainFunctionRWPeriodsType*   CanMainFunctionRWPeriodRef;     /* Reference to CanMainFunctionPeriod */
+	CanMainFunctionRWPeriodsType* const   CanMainFunctionRWPeriodRef;     /* Reference to CanMainFunctionPeriod */
 
 	MsgObjType						MsgObj[MAX_HW_OBJ_COUNT_PER_HOH]; /* Mssage Object array of struct pre HOH */ 
 	

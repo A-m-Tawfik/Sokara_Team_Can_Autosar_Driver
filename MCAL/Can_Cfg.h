@@ -35,15 +35,6 @@ present it shall have the Id 0.*/
 /* Selects support of Pretended Network features in Can driver. */
 #define CAN_PUBLIC_ICOM_SUPPORT 				STD_OFF
 
-#define CAN_TIMEOUT_DURATION 
-
-
-/* Specifies the CAN controller base address. */
-#define CAN_CONTROLLER_BASE_ADDRESS 
-
-#define CAN_CONTROLLER_1_ID 0U 
-#define CAN_CONTROLLER_2_ID 1U
-
 /* Enables / disables API Can_MainFunction_Write() for handling PDU transmission
 events in polling mode. */ 
 typedef uint8 CanProcessingType;
@@ -54,35 +45,13 @@ typedef uint8 CanProcessingType;
 #define MIXED_PROCESSING     1U   /* Mixed Mode of operation  */
 #define POLLING_PROCESSING  2U   /* Polling Mode of operation*/
 
-/* This parameter describes the period for cyclic call to
-Can_MainFunction_Read or Can_MainFunction_Write depending on the
-referring item. Unit is seconds. Different poll-cycles will be configurable if
-more than one CanMainFunctionPeriod is configured. In this case multiple
-Can_MainFunction_Read() or Can_MainFunction_Write() will be provided
-by the CAN Driver module.*/
-#define CAN_MAIN_FUNCTION_PERIOD 
 
-/* Specifies the value which is used to pad unspecified data in CAN FD
-frames > 8 bytes for transmission. This is necessary due to the discrete
-possible values of the DLC if > 8 bytes.
-If the length of a PDU which was requested to be sent does not match the
-allowed DLC values, the remaining bytes up to the next possible value
-shall be padded with this value */
-#define CAN_FD_PADDING_VALUE 0U
 
 /*Specifies the type (Full-CAN or Basic-CAN) of a hardware object*/
 #define CAN_HANDLE_TYPE BASIC_CAN
 
 #define BASIC_CAN  0U /* For several L-PDUs are hadled by the hardware object */
 #define FULL_CAN 1U /* For only one L-PDU (identifier) is handled by the hardware object */
-
-
-/*Number of hardware objects used to implement one HOH. In case of a
-HRH this parameter defines the number of elements in the hardware FIFO
-or the number of shadow buffers, in case of a HTH it defines the number of
-hardware objects used for multiplexed transmission or for a hardware FIFO
-used by a FullCAN HTH.*/
-#define CAN_HW_OBJ_COUNT 
 
 /* Specifies whether the IdValue is of type
 - standard identifier
@@ -110,11 +79,28 @@ Example: HRH0-0, HRH1-1, HTH0-2, HTH1-3*/
 
 
 #define NUM_OF_CAN_CONTROLLERS 2U
+#define CONTROLLER_0_ID 0U
+#define CONTROLLER_1_ID 1U
+#define CONTROLLER_0_BASE_ADD (volatile uint64*)0x40040000
+#define CONTROLLER_1_BASE_ADD (volatile uint64*)0x40041000
 
 #define NUM_OF_HOH 2U
+#define HOH_0_ID 0U
+#define HOH_1_ID 1U
+#define HOH_0_OBJ_CNT 1U
+#define HOH_1_OBJ_CNT 1U
 
 #define MAX_HW_OBJ_COUNT_PER_HOH 1U
+
+#define MSG_OBJ_0_ID 1U
+#define MSG_OBJ_1_ID 2U
+
+#define PDU_0_ID 13U
+#define PDU_1_ID 23U
+
 #define NUM_OF_MAIN_RW_PERSIODS 2U
+#define PERIOD_0 (float32) 0.001
+#define PERIOD_1 (float32) 0.005
 
 #define CAN_CONFIG 	{                                       /* CanType */\
 						{                                  /* CanGeneral*/\
@@ -125,46 +111,46 @@ Example: HRH0-0, HRH1-1, HTH0-2, HTH1-3*/
 						{                                /*CanConfigSet*/\
 						    {\
 							    {                            /* CanController[NUM_OF_CAN_CONTROLLERS]*/\
-								    0,                       /* CanControllerId */\
+							        CONTROLLER_0_ID,                       /* CanControllerId */\
 								    STD_ON,                  /* CanControllerActivation */\
-								    0x40041000,             /* CanControllerBaseAddress */\
+								    CONTROLLER_0_BASE_ADD,             /* CanControllerBaseAddress */\
 								    CAN_TX_PROCESSING_0      /* CanTxProcessing*/\
 							    },\
 							    {\
-							        1,                       /* CanControllerId */\
+							        CONTROLLER_1_ID,                       /* CanControllerId */\
 							        STD_ON,                  /* CanControllerActivation */\
-							        0x40041000,             /* CanControllerBaseAddress */\
+							        CONTROLLER_1_BASE_ADD,             /* CanControllerBaseAddress */\
 							        CAN_TX_PROCESSING_1      /* CanTxProcessing*/\
 							    }\
 						    },\
 							{                                                                            /* CanHardwareObject[ NUM_OF_HOH ]*/\
 						        {\
-								    &TivaCan.CanConfigSet.CanController[0],  								/* CanControllerRef*/\
+								    (Can_ConfigType*)&TivaCan.CanConfigSet.CanController[CONTROLLER_0_ID],  								/* CanControllerRef*/\
 								    TRUE,                                         								/* CanHardwareObjectUsesPolling*/\
-								    1,                                                                         /*  CanHwObjectCount */\
-								    0,\
+								    HOH_0_OBJ_CNT,                                                                         /*  CanHwObjectCount */\
+								    HOH_0_ID,\
 								    TRANSMIT_HOH,                                            					/* CanObjectType */\
-								    &TivaCan.CanGeneral.CanMainFunctionRWPeriods.CanMainFunctionPeriod[0],  /* CanMainFunctionRWPeriodRef*/\
+								    (CanMainFunctionRWPeriodsType*)&TivaCan.CanGeneral.CanMainFunctionRWPeriods,  /* CanMainFunctionRWPeriodRef*/\
 								    {\
 						                {\
-									        CAN_MSG_CONF,\
-									        1,\
-									        13\
+									        &MsgConf[0],\
+									        MSG_OBJ_0_ID,\
+									        PDU_0_ID\
 						                }\
 								    }\
 						        },\
 						        {                            													/* CanHardwareObject[ NUM_OF_HOH ]*/\
-						            &TivaCan.CanConfigSet.CanController[0],  								/* CanControllerRef*/\
+						            (Can_ConfigType*)&TivaCan.CanConfigSet.CanController[CONTROLLER_0_ID],  								/* CanControllerRef*/\
 						            TRUE,                                         								/* CanHardwareObjectUsesPolling*/\
-						            1,																			/* CanHwObjectCount */\
-						            1,\
+						            HOH_1_OBJ_CNT,																			/* CanHwObjectCount */\
+						            HOH_1_ID,\
 						            TRANSMIT_HOH,                                            					/* CanObjectType */\
-						            &TivaCan.CanGeneral.CanMainFunctionRWPeriods.CanMainFunctionPeriod[1],  /* CanMainFunctionRWPeriodRef*/\
+						            (CanMainFunctionRWPeriodsType*)&TivaCan.CanGeneral.CanMainFunctionRWPeriods,  /* CanMainFunctionRWPeriodRef*/\
 						            {\
 									    {\
-						                    CAN_MSG_CONF,\
-						                    2,\
-						                    23\
+						                    &MsgConf[1],\
+						                    MSG_OBJ_1_ID,\
+						                    PDU_0_ID\
 									    }\
 						            }\
 						        }\

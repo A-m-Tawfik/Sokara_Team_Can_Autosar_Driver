@@ -1,3 +1,7 @@
+#define CAN1_IF1CMSK_A          (0x40041024)
+#define CAN1_IF1MCTL_A          (0x40041038)
+#define CAN0_IF1CMSK_A			(0x40040024)
+#define CAN0_IF1MCTL_A          (0x40040038)
 //******************************************************* **********************
 //
 // tm4c123gh6pm.h - TM4C123GH6PM Register Definitions

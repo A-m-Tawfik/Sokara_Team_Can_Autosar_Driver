@@ -60,7 +60,16 @@
   #error "The AR version of CanIf_Cbk.h does not match the expected version"
 #endif
 
+#include "Det.h"
+/* AUTOSAR checking between Det and CAN Modules */
+#if ((DET_AR_RELEASE_MAJOR_VERSION != CAN_AR_RELEASE_MAJOR_VERSION)\
+ ||  (DET_AR_RELEASE_MINOR_VERSION != CAN_AR_RELEASE_MINOR_VERSION)\
+ ||  (DET_AR_RELEASE_PATCH_VERSION != CAN_AR_RELEASE_PATCH_VERSION))
+  #error "The AR version of CanIf_Cbk.h does not match the expected version"
+#endif
 
+/*Non-Autosar file*/
+#include "../Vertical_Layer/Bit_Helper.h"
 
 /* APIs Service Ids */ 
 #define Can_GetControllerMode_SID  (uint8)(0x12)
@@ -92,6 +101,45 @@ void Can_MainFunction_Write(void);
 /*This service reports about the current status of the requested CAN controller*/
 Std_ReturnType Can_GetControllerMode(uint8 Controller,Can_ControllerStateType* ControllerModePtr);
 
+#ifdef PERIOD_0
+#define Can_MainFuntion_Write_0() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_1
+#define Can_MainFuntion_Write_1() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_2
+#define Can_MainFuntion_Write_2() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_3
+#define Can_MainFuntion_Write_3() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_4
+#define Can_MainFuntion_Write_4() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_5
+#define Can_MainFuntion_Write_5() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_6
+#define Can_MainFuntion_Write_6() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_7
+#define Can_MainFuntion_Write_7() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_8
+#define Can_MainFuntion_Write_8() Can_MainFunction_Write()
+#endif
+
+#ifdef PERIOD_9
+#define Can_MainFuntion_Write_9() Can_MainFunction_Write()
+#endif
 
 
 
